@@ -7,6 +7,13 @@ template:
   orgIdentifier: default
   spec:
     type: Custom
+    inputs:
+      - name: repoUrl
+        type: String
+        default: ""
+      - name: branch
+        type: String
+        default: ""
     spec:
       execution:
         steps:
@@ -21,20 +28,26 @@ template:
                   type: Inline
                   spec:
                     script: |
-                      echo "Cloning repo..."
+                      echo "Cloning repo: <+stage.variables.repoUrl> on branch: <+stage.variables.branch>"
                 environmentVariables: []
                 outputVariables: []
           - step:
-              type: ShellScript
+              type: GitClone
               name: Clone Repo
               identifier: Clone_Repo
               spec:
-                shell: Bash
-                onDelegate: true
-                source:
-                  type: Inline
+                connectorRef: mygithubaccount
+                repoName: <+stage.variables.repoUrl>
+                build:
+                  type: branch
                   spec:
-                    script: |
-                      echo "Cloning repo2..."
-                environmentVariables: []
-                outputVariables: []
+                    branch: <+stage.variables.branch>
+    variables:
+      - name: repoUrl
+        type: String
+        value: <+input>
+        description: "GitHub repository name to clone"
+      - name: branch
+        type: String
+        value: <+input>
+        description: "Branch to clone"
