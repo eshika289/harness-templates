@@ -3,6 +3,8 @@ template:
   identifier: Checkout_Code
   versionLabel: "0.0.1"
   type: Step
+  projectIdentifier: default_project
+  orgIdentifier: default
   spec:
     type: ShellScript
     spec:
