@@ -1,19 +1,40 @@
 template:
   name: Checkout Code
   identifier: Checkout_Code
-  versionLabel: "0.0.1"
-  type: Step
+  versionLabel: "0.0.2"
+  type: Stage
   projectIdentifier: default_project
   orgIdentifier: default
   spec:
-    type: ShellScript
+    type: Custom
     spec:
-      shell: Bash
-      onDelegate: true
-      source:
-        type: Inline
-        spec:
-          script: |
-            echo "Hello World"
-      environmentVariables: []
-      outputVariables: []
+      execution:
+        steps:
+          - step:
+            type: ShellScript
+            name: Echo Clone Repo
+            identifier: Echo_Clone_Repo
+              spec:
+                shell: Bash
+                onDelegate: true
+                source:
+                  type: Inline
+                  spec:
+                    script: |
+                      echo "Cloning repo..."
+                environmentVariables: []
+                outputVariables: []
+          - step:
+            type: ShellScript
+            name: Clone Repo
+            identifier: Clone_Repo
+              spec:
+                shell: Bash
+                onDelegate: true
+                source:
+                  type: Inline
+                  spec:
+                    script: |
+                      echo "Cloning repo2..."
+                environmentVariables: []
+                outputVariables: []
