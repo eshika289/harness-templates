@@ -11,9 +11,9 @@ template:
       execution:
         steps:
           - step:
-            type: ShellScript
-            name: Echo Clone Repo
-            identifier: Echo_Clone_Repo
+              type: ShellScript
+              name: Echo Clone Repo
+              identifier: Echo_Clone_Repo
               spec:
                 shell: Bash
                 onDelegate: true
@@ -25,9 +25,9 @@ template:
                 environmentVariables: []
                 outputVariables: []
           - step:
-            type: ShellScript
-            name: Clone Repo
-            identifier: Clone_Repo
+              type: ShellScript
+              name: Clone Repo
+              identifier: Clone_Repo
               spec:
                 shell: Bash
                 onDelegate: true
