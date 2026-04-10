@@ -12,10 +12,11 @@ pipeline:
           versionLabel: "0.0.1"
           templateInputs:
             type: CI
-            variables:
-              - name: repoUrl
-                type: String
-                value: <+input>
-              - name: branch
-                type: String
-                value: <+input>
+            spec:
+              variables:
+                - name: repoUrl
+                  type: String
+                  value: <+input>
+                - name: branch
+                  type: String
+                  value: <+input>
