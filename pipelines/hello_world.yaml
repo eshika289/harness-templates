@@ -16,6 +16,6 @@ pipeline:
                   identifier: Hello_World_Step
                   template:
                     templateRef: Checkout_Code
-                    versionLabel: 0.0.2
+                    versionLabel: 0.0.1
                   delegateSelectors:
                     - docker-delegate
