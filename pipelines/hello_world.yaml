@@ -10,12 +10,12 @@ pipeline:
         type: CI
         spec:
           cloneCodebase: false
-          infrastructure:
-            type: VM
-            spec:
-              type: Local
-              spec:
-                os: Linux
+          platform:
+            os: Linux
+            arch: Arm64
+          runtime:
+            type: Docker
+            spec: {}
           execution:
             steps:
               - step:
@@ -25,3 +25,9 @@ pipeline:
                   spec:
                     shell: Sh
                     command: echo "hello world"
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: StageRollback
