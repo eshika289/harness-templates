@@ -5,8 +5,23 @@ pipeline:
   orgIdentifier: default
   stages:
     - stage:
-        name: Checkout Code
-        identifier: Checkout_Code_Stage
-        template:
-          templateRef: Checkout_Code
-          versionLabel: "0.0.1"
+        name: CI Test
+        identifier: CI_Test
+        type: CI
+        spec:
+          cloneCodebase: false
+          infrastructure:
+            type: VM
+            spec:
+              type: Local
+              spec:
+                os: Linux
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Echo Test
+                  identifier: Echo_Test
+                  spec:
+                    shell: Sh
+                    command: echo "hello world"
