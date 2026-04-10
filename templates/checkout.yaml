@@ -1,7 +1,7 @@
 template:
   name: Checkout Code
   identifier: Checkout_Code
-  versionLabel: "0.0.2"
+  versionLabel: "0.0.3"
   type: Stage
   projectIdentifier: default_project
   orgIdentifier: default
