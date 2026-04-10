@@ -9,14 +9,25 @@ template:
     type: CI
     spec:
       cloneCodebase: false
-      infrastructure:
-        type: VM
-        spec:
-          type: Local
-          spec:
-            os: Linux
+      platform:
+        os: Linux
+        arch: Arm64
+      runtime:
+        type: Docker
+        spec: {}
       execution:
         steps:
+          - step:
+              type: GitClone
+              name: Clone Repo
+              identifier: Clone_Repo
+              spec:
+                connectorRef: mygithubaccount
+                repoName: <+stage.variables.repoUrl>
+                build:
+                  type: branch
+                  spec:
+                    branch: <+stage.variables.branch>
           - step:
               type: Run
               name: Echo Clone Info
@@ -24,4 +35,20 @@ template:
               spec:
                 shell: Sh
                 command: |
-                  echo "hello from CI template"
+                  echo "Cloned repo: <+stage.variables.repoUrl>"
+                  echo "Branch: <+stage.variables.branch>"
+      variables:
+        - name: repoUrl
+          type: String
+          value: <+input>
+          description: "GitHub repo name e.g. myorg/myrepo"
+        - name: branch
+          type: String
+          value: <+input>
+          description: "Branch to clone e.g. main"
+    failureStrategies:
+      - onFailure:
+          errors:
+            - AllErrors
+          action:
+            type: StageRollback
