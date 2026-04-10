@@ -1,1 +1,21 @@
-
+pipeline:
+  name: Hello World
+  identifier: Hello_World
+  projectIdentifier: default_project
+  orgIdentifier: default
+  stages:
+    - stage:
+        name: Hello World
+        identifier: Hello_World
+        type: Custom
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: Hello World Step
+                  identifier: Hello_World_Step
+                  template:
+                    templateRef: Checkout_Code
+                    versionLabel: 0.0.1
+                  delegateSelectors:
+                    - docker-delegate
