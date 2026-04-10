@@ -1,0 +1,17 @@
+template:
+  name: Checkout Code
+  identifier: Checkout_Code
+  versionLabel: "0.0.1"
+  type: Step
+  spec:
+    type: ShellScript
+    spec:
+      shell: Bash
+      onDelegate: true
+      source:
+        type: Inline
+        spec:
+          script: |
+            echo "Hello World"
+      environmentVariables: []
+      outputVariables: []
