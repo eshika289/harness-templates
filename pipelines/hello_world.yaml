@@ -11,7 +11,7 @@ pipeline:
           templateRef: Checkout_Code
           versionLabel: "0.0.1"
           templateInputs:
-            type: Custom
+            type: CI
             variables:
               - name: repoUrl
                 type: String
