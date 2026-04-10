@@ -9,7 +9,7 @@ pipeline:
         identifier: Checkout_Code
         template:
           templateRef: Checkout_Code
-          versionLabel: "0.0.3"
+          versionLabel: "0.0.1"
           templateInputs:
             type: Custom
             variables:
