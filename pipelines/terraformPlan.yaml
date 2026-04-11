@@ -1,6 +1,6 @@
 pipeline:
-  name: Hello World
-  identifier: Hello_World
+  name: Terraform Plan
+  identifier: Terraform_Plan
   projectIdentifier: default_project
   orgIdentifier: default
   stages:
