@@ -34,7 +34,7 @@ pipeline:
                   name: Terraform Plan
                   identifier: Terraform_Plan_Step
                   spec:
-                    provisionerIdentifier: my_infra
+                    provisionerIdentifier: my_infra # identifier that would be used in the apply or destroy steps
                     configuration:
                       secretManagerRef: harnessSecretManager
                       command: Apply # Runs terraform plan in Apply/Normal mode, not Destroy mode
