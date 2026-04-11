@@ -12,15 +12,23 @@ pipeline:
           execution:
             steps:
               - step:
-                  type: Run
+                  type: ShellScript
                   name: Set Terraform Version
                   identifier: Set_Terraform_Version
                   spec:
-                    shell: Sh
-                    command: |
-                      #export PATH="/usr/local/tfenv/bin:$PATH"
-                      #tfenv use <+pipeline.variables.terraformVersion>
-                      terraform --version
+                    shell: Bash
+                    onDelegate: true
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          #export PATH="/usr/local/tfenv/bin:$PATH"
+                          #tfenv use <+pipeline.variables.terraformVersion>
+                          terraform --version
+                    environmentVariables: []
+                    outputVariables: []
+                  delegateSelectors:
+                    - docker-delegate
               - step:
                   type: TerraformPlan
                   name: Terraform Plan
