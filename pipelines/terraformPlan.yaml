@@ -1,0 +1,70 @@
+pipeline:
+  name: Hello World
+  identifier: Hello_World
+  projectIdentifier: default_project
+  orgIdentifier: default
+  stages:
+    - stage:
+        name: Terraform Plan
+        identifier: Terraform_Plan
+        type: Custom
+        spec:
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Set Terraform Version
+                  identifier: Set_Terraform_Version
+                  spec:
+                    shell: Sh
+                    command: |
+                      #export PATH="/usr/local/tfenv/bin:$PATH"
+                      #tfenv use <+pipeline.variables.terraformVersion>
+                      terraform --version
+              - step:
+                  type: TerraformPlan
+                  name: Terraform Plan
+                  identifier: Terraform_Plan_Step
+                  spec:
+                    provisionerIdentifier: my_infra
+                    configuration:
+                      secretManagerRef: harnessSecretManager
+                      command: Apply # Runs terraform plan in Apply/Normal mode, not Destroy mode
+                      configFiles:
+                        store:
+                          type: Github
+                          spec: 
+                            connectorRef: mygithubaccount
+                            gitFetchType: Branch
+                            repoName: <+pipeline.variables.repoUrl>
+                            branch: <+pipeline.variables.branch>
+                            folderPath: <+pipeline.variables.terraformDir>
+                  delegateSelectors:
+                    - docker-delegate
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: StageRollback
+  variables:
+    - name: repoUrl
+      type: String
+      value: <+input>
+      description: "GitHub repo name e.g. myorg/myrepo"
+    - name: branch
+      type: String
+      value: <+input>
+      description: "Branch to clone e.g. main"
+    - name: terraformDir
+      type: String
+      value: <+input>
+      description: "Path to terraform directory e.g. terraform/"
+    - name: terraformVersion
+      type: String
+      value: <+input>
+      description: "Terraform version to use"
+      allowedValues:
+        - 1.7.5
+        - 1.8.3
+        - 1.4.4
