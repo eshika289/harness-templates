@@ -99,10 +99,10 @@ pipeline:
                     environmentVariables:
                       - name: VAULT_ROLE_ID
                         type: Secret
-                        value: <+secrets.getValue("vault-role-id")>
+                        value: vault-role-id
                       - name: VAULT_SECRET_ID
                         type: Secret
-                        value: <+secrets.getValue("vault-secret-id")>
+                        value: vault-secret-id
                     outputVariables:
                       - name: AWS_ACCESS_KEY_ID
                         type: String
