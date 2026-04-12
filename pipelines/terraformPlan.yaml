@@ -43,6 +43,13 @@ pipeline:
                         spec:
                           connectorRef: myawsaccount
                           region: us-east-1
+                      backendConfig:
+                        type: Inline
+                        spec:
+                          content: |
+                            bucket = "eshika-terraform-state-bucket"
+                            key    = "<+pipeline.variables.repoUrl>/terraform.tfstate"
+                            region = "us-east-1"
                       configFiles:
                         store:
                           type: Github
