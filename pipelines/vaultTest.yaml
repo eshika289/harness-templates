@@ -1,8 +1,8 @@
 pipeline:
   name: Vault AWS Credentials Test
   identifier: vault_aws_creds_test
-  projectIdentifier: <your_project_identifier>
-  orgIdentifier: <your_org_identifier>
+  projectIdentifier: default_project
+  orgIdentifier: default
   tags: {}
   stages:
     - stage:
