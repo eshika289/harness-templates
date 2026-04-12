@@ -79,6 +79,9 @@ pipeline:
                                 set -e
                                 echo "Vault address: $VAULT_ADDR"
 
+                                echo "ROLE_ID length: ${#VAULT_ROLE_ID}"
+                                echo "SECRET_ID length: ${#VAULT_SECRET_ID}"
+
                                 echo "Logging into Vault via AppRole..."
                                 export VAULT_TOKEN=$(vault write -field=token auth/approle/login \
                                   role_id="$VAULT_ROLE_ID" \
