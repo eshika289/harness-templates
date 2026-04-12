@@ -34,7 +34,7 @@ pipeline:
                   name: Terraform Plan
                   identifier: Terraform_Plan_Step
                   spec:
-                    provisionerIdentifier: "<+pipeline.variables.repoUrl>-<+pipeline.variables.branch>" # maps to state file, should be the same for all terrafom commands against this state
+                    provisionerIdentifier: my-pipeline-name # maps to state file, should be the same for all terrafom commands against this state
                     configuration:
                       secretManagerRef: harnessSecretManager
                       command: Apply # Runs terraform plan in Apply/Normal mode, not Destroy mode
