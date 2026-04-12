@@ -80,6 +80,7 @@ pipeline:
                               script: |
                                 #!/bin/bash
                                 set -e
+                                echo "Vault address: $VAULT_ADDR"
 
                                 echo "Logging into Vault via AppRole..."
                                 export VAULT_TOKEN=$(vault write auth/approle/login \
