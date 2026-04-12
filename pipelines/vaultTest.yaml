@@ -54,6 +54,11 @@ pipeline:
                           set -e
 
                           export VAULT_ADDR="$VAULT_ADDR"
+                          
+                          # Debug — see exactly what values are being injected
+                          echo "VAULT_ADDR:    $VAULT_ADDR"
+                          echo "ROLE_ID length: ${#VAULT_ROLE_ID}"    # prints length without revealing value
+                          echo "SECRET_ID length: ${#VAULT_SECRET_ID}"
 
                           echo "Logging into Vault via AppRole..."
                           export VAULT_TOKEN=$(vault write -field=token auth/approle/login \
