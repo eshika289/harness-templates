@@ -43,7 +43,6 @@ pipeline:
                         spec:
                           connectorRef: myawsaccount
                           region: us-east-1
-                          roleArn: arn:aws:iam::196010726438:role/harness-aws-app1
                       configFiles:
                         store:
                           type: Github
