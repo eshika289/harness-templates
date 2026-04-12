@@ -24,9 +24,6 @@ pipeline:
                     - docker-delegate
                   sharedPaths: []
                   environmentVariables:
-                    - name: VAULT_ADDR
-                      type: String
-                      value: http://vault:8200
                     - name: VAULT_ROLE_ID
                       type: Secret
                       value: vault-role-id
