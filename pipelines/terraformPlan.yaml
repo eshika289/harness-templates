@@ -61,6 +61,38 @@ pipeline:
                             folderPath: <+pipeline.variables.terraformDir>
                   delegateSelectors:
                     - docker-delegate
+              - step:
+                  type: TerraformApply
+                  name: Terraform Apply
+                  identifier: Terraform_Apply_Step
+                  spec:
+                    provisionerIdentifier: mypipelinename
+                    configuration:
+                      secretManagerRef: harnessSecretManager
+                      type: InheritFromPlan
+                      providerCredential:
+                        type: Aws
+                        spec:
+                          connectorRef: myawsaccount
+                          region: us-east-1
+                      backendConfig:
+                        type: Inline
+                        spec:
+                          content: |
+                            bucket = "eshika-terraform-state-bucket"
+                            key    = "<+pipeline.variables.repoUrl>/terraform.tfstate"
+                            region = "us-east-1"
+                      configFiles:
+                        store:
+                          type: Github
+                          spec:
+                            connectorRef: mygithubaccount
+                            gitFetchType: Branch
+                            repoName: <+pipeline.variables.repoUrl>
+                            branch: <+pipeline.variables.branch>
+                            folderPath: <+pipeline.variables.terraformDir>
+                  delegateSelectors:
+                    - docker-delegate
         failureStrategies:
           - onFailure:
               errors:
