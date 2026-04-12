@@ -38,6 +38,12 @@ pipeline:
                     configuration:
                       secretManagerRef: harnessSecretManager
                       command: Apply # Runs terraform plan in Apply/Normal mode, not Destroy mode
+                      providerCredential: # references your OIDC AWS connector
+                        type: Aws
+                        spec:
+                          connectorRef: myawsaccount
+                          region: us-east-1
+                          roleArn: arn:aws:iam::196010726438:role/harness-aws-app1
                       configFiles:
                         store:
                           type: Github
@@ -47,6 +53,7 @@ pipeline:
                             repoName: <+pipeline.variables.repoUrl>
                             branch: <+pipeline.variables.branch>
                             folderPath: <+pipeline.variables.terraformDir>
+                            
                   delegateSelectors:
                     - docker-delegate
         failureStrategies:
