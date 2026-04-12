@@ -57,6 +57,8 @@ pipeline:
                           
                           # Debug — see exactly what values are being injected
                           echo "VAULT_ADDR:    $VAULT_ADDR"
+                          echo "ROLE_ID value:    [$VAULT_ROLE_ID]"
+                          echo "SECRET_ID value:  [$VAULT_SECRET_ID]"
                           echo "ROLE_ID length: ${#VAULT_ROLE_ID}"    # prints length without revealing value
                           echo "SECRET_ID length: ${#VAULT_SECRET_ID}"
 
