@@ -91,7 +91,7 @@ pipeline:
 
                     environmentVariables:
                       - name: VAULT_ROLE_ID
-                        type: String
+                        type: Secret
                         value: <+secrets.getValue("vault-role-id")>
                       - name: VAULT_SECRET_ID
                         type: Secret
