@@ -13,148 +13,202 @@ pipeline:
           execution:
             steps:
 
-              # -----------------------------------------------
-              # STEP 1: Validate Vault CLI exists
-              # -----------------------------------------------
-              - step:
-                  name: Vault Version Check
-                  identifier: vault_version_check
-                  type: ShellScript
-                  spec:
-                    shell: Bash
-                    executionTarget: {}
-                    source:
-                      type: Inline
-                      spec:
-                        script: |
-                          #!/bin/bash
-                          set -e
+              # ═══════════════════════════════════════════════
+              # STEP GROUP: Vault Auth + AWS Identity Check
+              # Shared env vars available to all steps inside
+              # ═══════════════════════════════════════════════
+              - stepGroup:
+                  name: Vault AWS Auth
+                  identifier: vault_aws_auth_group
+                  delegateSelectors:
+                    - docker-delegate
+                  sharedPaths: []
+                  environmentVariables:
+                    - name: VAULT_ADDR
+                      type: String
+                      value: http://vault:8200
+                    - name: VAULT_ROLE_ID
+                      type: Secret
+                      value: vault-role-id
+                    - name: VAULT_SECRET_ID
+                      type: Secret
+                      value: vault-secret-id
+                    - name: AWS_REGION
+                      type: String
+                      value: us-east-1
+                  steps:
 
-                          echo "Checking Vault CLI..."
-                          vault --version
+                    # -----------------------------------------------
+                    # STEP 1: Validate Vault CLI exists
+                    # -----------------------------------------------
+                    - step:
+                        name: Vault Version Check
+                        identifier: vault_version_check
+                        type: ShellScript
+                        spec:
+                          shell: Bash
+                          onDelegate: true
+                          source:
+                            type: Inline
+                            spec:
+                              script: |
+                                #!/bin/bash
+                                set -e
 
-                          echo "Vault address: $VAULT_ADDR"
+                                echo "Checking Vault CLI..."
+                                vault --version
 
-              # -----------------------------------------------
-              # STEP 2: Login to Vault via AppRole
-              # and fetch temporary AWS STS credentials
-              # -----------------------------------------------
-              - step:
-                  name: Vault AppRole Login and Fetch AWS Creds via STS
-                  identifier: vault_approle_login
-                  type: ShellScript
-                  spec:
-                    shell: Bash
-                    executionTarget: {}
-                    source:
-                      type: Inline
-                      spec:
-                        script: |
-                          #!/bin/bash
-                          set -e
+                                echo "Vault address: $VAULT_ADDR"
+                          environmentVariables: []
+                          outputVariables: []
+                        timeout: 2m
 
-                          export VAULT_ADDR="$VAULT_ADDR"
+                    # -----------------------------------------------
+                    # STEP 2: Login to Vault via AppRole
+                    # Fetch STS creds, write to execution-scoped file
+                    # -----------------------------------------------
+                    - step:
+                        name: Vault AppRole Login and Fetch AWS Creds via STS
+                        identifier: vault_approle_login
+                        type: ShellScript
+                        spec:
+                          shell: Bash
+                          onDelegate: true
+                          source:
+                            type: Inline
+                            spec:
+                              script: |
+                                #!/bin/bash
+                                set -e
 
-                          echo "Logging into Vault via AppRole..."
-                          export VAULT_TOKEN=$(vault write -field=token auth/approle/login \
-                            role_id="$VAULT_ROLE_ID" \
-                            secret_id="$VAULT_SECRET_ID")
+                                echo "Logging into Vault via AppRole..."
+                                export VAULT_TOKEN=$(vault write -field=token auth/approle/login \
+                                  role_id="$VAULT_ROLE_ID" \
+                                  secret_id="$VAULT_SECRET_ID")
 
-                          echo "✓ Vault login successful"
-                          echo "  Token prefix: $(echo $VAULT_TOKEN | cut -c1-8)..."
+                                echo "✓ Vault login successful"
+                                echo "  Token prefix: $(echo $VAULT_TOKEN | cut -c1-8)..."
 
-                          echo ""
-                          echo "Fetching temporary AWS STS credentials..."
-                          AWS_CREDS=$(vault read -format=json aws/sts/harness-aws-role)
+                                echo ""
+                                echo "Fetching temporary AWS STS credentials..."
 
-                          # Parse creds from JSON response
-                          export AWS_ACCESS_KEY_ID=$(echo "$AWS_CREDS" | jq -r '.data.access_key')
-                          export AWS_SECRET_ACCESS_KEY=$(echo "$AWS_CREDS" | jq -r '.data.secret_key')
-                          export AWS_SESSION_TOKEN=$(echo "$AWS_CREDS" | jq -r '.data.security_token')
-                          LEASE_DURATION=$(echo "$AWS_CREDS" | jq -r '.lease_duration')
+                                AWS_ACCESS_KEY_ID=$(vault read -field=access_key aws/sts/harness-aws-role)
+                                AWS_SECRET_ACCESS_KEY=$(vault read -field=secret_key aws/sts/harness-aws-role)
+                                AWS_SESSION_TOKEN=$(vault read -field=security_token aws/sts/harness-aws-role)
 
-                          echo "✓ STS credentials fetched"
-                          echo "  Access Key prefix: $(echo $AWS_ACCESS_KEY_ID | cut -c1-4)..."
-                          echo "  Lease duration:    $LEASE_DURATION seconds"
+                                echo "✓ STS credentials fetched"
+                                echo "  Access Key prefix: $(echo $AWS_ACCESS_KEY_ID | cut -c1-4)..."
 
-                          # Confirm it's STS (ASIA prefix) not IAM (AKIA prefix)
-                          if echo "$AWS_ACCESS_KEY_ID" | grep -q "^ASIA"; then
-                            echo "✓ Confirmed STS temporary credentials (ASIA prefix)"
-                          else
-                            echo "✗ WARNING: Expected STS creds (ASIA prefix), got: $(echo $AWS_ACCESS_KEY_ID | cut -c1-4)"
-                            exit 1
-                          fi
+                                # Confirm STS (ASIA prefix) not IAM user (AKIA prefix)
+                                if echo "$AWS_ACCESS_KEY_ID" | grep -q "^ASIA"; then
+                                  echo "✓ Confirmed STS temporary credentials (ASIA prefix)"
+                                else
+                                  echo "✗ WARNING: Expected ASIA prefix, got: $(echo $AWS_ACCESS_KEY_ID | cut -c1-4)"
+                                  exit 1
+                                fi
 
-                    environmentVariables:
-                      - name: VAULT_ROLE_ID
-                        type: Secret
-                        value: vault-role-id
-                      - name: VAULT_SECRET_ID
-                        type: Secret
-                        value: vault-secret-id
-                    outputVariables:
-                      - name: AWS_ACCESS_KEY_ID
-                        type: String
-                        value: AWS_ACCESS_KEY_ID
-                      - name: AWS_SECRET_ACCESS_KEY
-                        type: Secret
-                        value: AWS_SECRET_ACCESS_KEY
-                      - name: AWS_SESSION_TOKEN
-                        type: Secret
-                        value: AWS_SESSION_TOKEN
+                                # Write to execution-scoped credentials file
+                                # Isolated per pipeline run — no collision with other pipelines
+                                EXEC_DIR="/tmp/harness-<+pipeline.executionId>"
+                                mkdir -p "$EXEC_DIR"
 
-              # -----------------------------------------------
-              # STEP 3: Verify AWS identity using STS creds
-              # -----------------------------------------------
-              - step:
-                  name: AWS STS Get Caller Identity
-                  identifier: aws_sts_get_caller_identity
-                  type: ShellScript
-                  spec:
-                    shell: Bash
-                    executionTarget: {}
-                    source:
-                      type: Inline
-                      spec:
-                        script: |
-                          #!/bin/bash
-                          set -e
+                                cat > "$EXEC_DIR/aws-credentials" <<EOF
+                                [default]
+                                aws_access_key_id=$AWS_ACCESS_KEY_ID
+                                aws_secret_access_key=$AWS_SECRET_ACCESS_KEY
+                                aws_session_token=$AWS_SESSION_TOKEN
+                                EOF
 
-                          export AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"
-                          export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
-                          export AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN"
-                          export AWS_DEFAULT_REGION="${AWS_REGION:-us-east-1}"
+                                chmod 600 "$EXEC_DIR/aws-credentials"
+                                echo "✓ Credentials written to $EXEC_DIR/aws-credentials"
 
-                          echo "Verifying AWS identity with STS credentials..."
-                          IDENTITY=$(aws sts get-caller-identity)
+                                # Revoke vault token — no longer needed
+                                #vault token revoke "$VAULT_TOKEN"
+                                unset VAULT_TOKEN
+                                #echo "✓ Vault token revoked"
+                          environmentVariables: []   # inherited from step group
+                          outputVariables: []        # no passing between steps needed
+                        timeout: 5m
 
-                          echo ""
-                          echo "✓ AWS Identity confirmed:"
-                          echo "  Account: $(echo $IDENTITY | jq -r '.Account')"
-                          echo "  UserID:  $(echo $IDENTITY | jq -r '.UserId')"
-                          echo "  ARN:     $(echo $IDENTITY | jq -r '.Arn')"
+                    # -----------------------------------------------
+                    # STEP 3: Verify AWS identity using STS creds
+                    # Reads from execution-scoped credentials file
+                    # -----------------------------------------------
+                    - step:
+                        name: AWS STS Get Caller Identity
+                        identifier: aws_sts_get_caller_identity
+                        type: ShellScript
+                        spec:
+                          shell: Bash
+                          onDelegate: true
+                          source:
+                            type: Inline
+                            spec:
+                              script: |
+                                #!/bin/bash
+                                set -e
 
-                          # Confirm we're running as the assumed role not the admin user
-                          ARN=$(echo $IDENTITY | jq -r '.Arn')
-                          if echo "$ARN" | grep -q "assumed-role/VaultHarnessRole"; then
-                            echo ""
-                            echo "✓ Confirmed: running as VaultHarnessRole (not vault-admin-user)"
-                          else
-                            echo ""
-                            echo "✗ WARNING: Not running as expected role. ARN: $ARN"
-                            exit 1
-                          fi
+                                # Point AWS SDK to execution-scoped credentials file
+                                export AWS_SHARED_CREDENTIALS_FILE="/tmp/harness-<+pipeline.executionId>/aws-credentials"
+                                export AWS_DEFAULT_REGION="$AWS_REGION"
 
-                    environmentVariables:
-                      - name: AWS_ACCESS_KEY_ID
-                        type: String
-                        value: <+pipeline.stages.fetch_aws_creds.spec.execution.steps.vault_approle_login.output.outputVariables.AWS_ACCESS_KEY_ID>
-                      - name: AWS_SECRET_ACCESS_KEY
-                        type: Secret
-                        value: <+pipeline.stages.fetch_aws_creds.spec.execution.steps.vault_approle_login.output.outputVariables.AWS_SECRET_ACCESS_KEY>
-                      - name: AWS_SESSION_TOKEN
-                        type: Secret
-                        value: <+pipeline.stages.fetch_aws_creds.spec.execution.steps.vault_approle_login.output.outputVariables.AWS_SESSION_TOKEN>
-                      - name: AWS_REGION
-                        type: String
-                        value: us-east-1
+                                echo "Verifying AWS identity with STS credentials..."
+                                IDENTITY=$(aws sts get-caller-identity)
+
+                                echo ""
+                                echo "✓ AWS Identity confirmed:"
+                                echo "  Account: $(echo $IDENTITY | jq -r '.Account')"
+                                echo "  UserID:  $(echo $IDENTITY | jq -r '.UserId')"
+                                echo "  ARN:     $(echo $IDENTITY | jq -r '.Arn')"
+
+                                ARN=$(echo $IDENTITY | jq -r '.Arn')
+                                if echo "$ARN" | grep -q "assumed-role/VaultHarnessRole"; then
+                                  echo ""
+                                  echo "✓ Confirmed: running as VaultHarnessRole (not vault-admin-user)"
+                                else
+                                  echo ""
+                                  echo "✗ WARNING: Not running as expected role. ARN: $ARN"
+                                  exit 1
+                                fi
+                          environmentVariables: []   # inherited from step group
+                          outputVariables: []
+                        timeout: 5m
+
+                    # -----------------------------------------------
+                    # STEP 4: Cleanup
+                    # Always runs — even if previous steps fail
+                    # -----------------------------------------------
+                    - step:
+                        name: Cleanup Credentials
+                        identifier: cleanup_credentials
+                        type: ShellScript
+                        spec:
+                          shell: Bash
+                          onDelegate: true
+                          source:
+                            type: Inline
+                            spec:
+                              script: |
+                                #!/bin/bash
+
+                                EXEC_DIR="/tmp/harness-<+pipeline.executionId>"
+
+                                if [ -d "$EXEC_DIR" ]; then
+                                  rm -rf "$EXEC_DIR"
+                                  echo "✓ Credentials cleaned up: $EXEC_DIR"
+                                else
+                                  echo "Nothing to clean up"
+                                fi
+                          environmentVariables: []
+                          outputVariables: []
+                          when:
+                            stageStatus: All   # runs on success AND failure
+                        timeout: 2m
+
+                  # Failure strategy for the whole group
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: StageRollback
