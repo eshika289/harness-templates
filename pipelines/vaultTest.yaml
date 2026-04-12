@@ -24,12 +24,6 @@ pipeline:
                     - docker-delegate
                   sharedPaths: []
                   environmentVariables:
-                    - name: VAULT_ROLE_ID
-                      type: Secret
-                      value: vault-role-id
-                    - name: VAULT_SECRET_ID
-                      type: Secret
-                      value: vault-secret-id
                     - name: AWS_REGION
                       type: String
                       value: us-east-1
@@ -127,7 +121,16 @@ pipeline:
                                 #vault token revoke "$VAULT_TOKEN"
                                 unset VAULT_TOKEN
                                 #echo "✓ Vault token revoked"
-                          environmentVariables: []   # inherited from step group
+                          environmentVariables:               # ← secrets defined HERE on the step
+                            - name: VAULT_ADDR
+                              type: String
+                              value: http://vault:8200
+                            - name: VAULT_ROLE_ID
+                              type: Secret
+                              value: vault-role-id
+                            - name: VAULT_SECRET_ID
+                              type: Secret
+                              value: vault-secret-id
                           outputVariables: []        # no passing between steps needed
                         timeout: 5m
 
