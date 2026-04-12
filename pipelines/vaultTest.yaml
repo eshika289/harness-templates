@@ -54,13 +54,6 @@ pipeline:
                           set -e
 
                           export VAULT_ADDR="$VAULT_ADDR"
-                          
-                          # Debug — see exactly what values are being injected
-                          echo "VAULT_ADDR:    $VAULT_ADDR"
-                          echo "ROLE_ID value:    [$VAULT_ROLE_ID]"
-                          echo "SECRET_ID value:  [$VAULT_SECRET_ID]"
-                          echo "ROLE_ID length: ${#VAULT_ROLE_ID}"    # prints length without revealing value
-                          echo "SECRET_ID length: ${#VAULT_SECRET_ID}"
 
                           echo "Logging into Vault via AppRole..."
                           export VAULT_TOKEN=$(vault write -field=token auth/approle/login \
@@ -91,10 +84,6 @@ pipeline:
                             echo "✗ WARNING: Expected STS creds (ASIA prefix), got: $(echo $AWS_ACCESS_KEY_ID | cut -c1-4)"
                             exit 1
                           fi
-
-                          # Revoke Vault token after use — least privilege
-                          vault token revoke "$VAULT_TOKEN"
-                          echo "✓ Vault token revoked"
 
                     environmentVariables:
                       - name: VAULT_ROLE_ID
