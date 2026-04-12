@@ -34,11 +34,11 @@ pipeline:
                   name: Terraform Plan
                   identifier: Terraform_Plan_Step
                   spec:
-                    provisionerIdentifier: my-pipeline-name # maps to state file, should be the same for all terrafom commands against this state
+                    provisionerIdentifier: mypipelinename
                     configuration:
                       secretManagerRef: harnessSecretManager
-                      command: Apply # Runs terraform plan in Apply/Normal mode, not Destroy mode
-                      providerCredential: # references your OIDC AWS connector
+                      command: Apply
+                      providerCredential:
                         type: Aws
                         spec:
                           connectorRef: myawsaccount
@@ -53,13 +53,12 @@ pipeline:
                       configFiles:
                         store:
                           type: Github
-                          spec: 
+                          spec:
                             connectorRef: mygithubaccount
                             gitFetchType: Branch
                             repoName: <+pipeline.variables.repoUrl>
                             branch: <+pipeline.variables.branch>
                             folderPath: <+pipeline.variables.terraformDir>
-                            
                   delegateSelectors:
                     - docker-delegate
         failureStrategies:
@@ -72,19 +71,19 @@ pipeline:
     - name: repoUrl
       type: String
       value: <+input>
-      description: "GitHub repo name e.g. myorg/myrepo"
+      description: GitHub repo name e.g. myorg/myrepo
     - name: branch
       type: String
       value: <+input>
-      description: "Branch to clone e.g. main"
+      description: Branch to clone e.g. main
     - name: terraformDir
       type: String
       value: <+input>
-      description: "Path to terraform directory e.g. terraform/"
+      description: Path to terraform directory e.g. terraform/
     - name: terraformVersion
       type: String
       value: <+input>
-      description: "Terraform version to use"
+      description: Terraform version to use
       allowedValues:
         - 1.7.5
         - 1.8.3
