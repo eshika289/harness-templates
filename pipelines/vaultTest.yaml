@@ -150,6 +150,7 @@ pipeline:
 
                                 # Point AWS SDK to execution-scoped credentials file
                                 export AWS_SHARED_CREDENTIALS_FILE="/tmp/harness-<+pipeline.executionId>/aws-credentials"
+                                cat $AWS_SHARED_CREDENTIALS_FILE
                                 export AWS_DEFAULT_REGION="$AWS_REGION"
 
                                 echo "Verifying AWS identity with STS credentials..."
