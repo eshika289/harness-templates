@@ -5,8 +5,8 @@ pipeline:
   orgIdentifier: default
   stages:
     - stage:
-        name: Terraform Plan
-        identifier: Terraform_Plan
+        name: Terraform
+        identifier: Terraform
         type: Custom
         spec:
           execution:
@@ -61,19 +61,6 @@ pipeline:
                             folderPath: <+pipeline.variables.terraformDir>
                   delegateSelectors:
                     - docker-delegate
-        failureStrategies:
-          - onFailure:
-              errors:
-                - AllErrors
-              action:
-                type: StageRollback
-    - stage:
-        name: Approval
-        identifier: Approval
-        type: Approval
-        spec:
-          execution:
-            steps:
               - step:
                   name: Approval
                   identifier: approval
@@ -88,32 +75,6 @@ pipeline:
                       userGroups:
                         - _project_all_users
                     isAutoRejectEnabled: false
-        failureStrategies: []
-    - stage:
-        name: Terraform Apply
-        identifier: Terraform_Apply
-        type: Custom
-        spec:
-          execution:
-            steps:
-              - step:
-                  type: ShellScript
-                  name: Set Terraform Version
-                  identifier: Set_Terraform_Version
-                  spec:
-                    shell: Bash
-                    onDelegate: true
-                    source:
-                      type: Inline
-                      spec:
-                        script: |
-                          export PATH="/usr/local/tfenv/bin:$PATH"
-                          tfenv use <+pipeline.variables.terraformVersion>
-                          terraform --version
-                    environmentVariables: []
-                    outputVariables: []
-                  delegateSelectors:
-                    - docker-delegate
               - step:
                   type: TerraformApply
                   name: Terraform Apply
