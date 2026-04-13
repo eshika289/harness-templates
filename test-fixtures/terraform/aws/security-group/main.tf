@@ -9,7 +9,7 @@ data "aws_vpc" "default" {
 
 # Create Security Group in that VPC
 resource "aws_security_group" "example" {
-  name        = "example-sg"
+  name        = "example-sg2"
   description = "Allow SSH and HTTP"
   vpc_id      = data.aws_vpc.default.id
 
