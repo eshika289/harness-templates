@@ -87,9 +87,6 @@ pipeline:
                       disallowPipelineExecutor: false
                       userGroups:
                         - _project_all_users
-                    approverInputs:
-                      - name: isApproved
-                        defaultValue: value
                     isAutoRejectEnabled: false
         failureStrategies: []
     - stage:
