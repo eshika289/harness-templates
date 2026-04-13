@@ -1,0 +1,52 @@
+pipeline:
+  name: Terraform IaCM Pipeline
+  identifier: Terraform_IaCM_Pipeline
+  projectIdentifier: default_project
+  orgIdentifier: default
+  stages:
+    - stage:
+        name: Terraform IaCM
+        identifier: Terraform_IaCM
+        type: IaCM
+        spec:
+          workspace: my_workspace   # Name of your IaCM workspace in Harness
+          execution:
+            steps:
+              - step:
+                  type: TerraformPlan
+                  name: Terraform Plan
+                  identifier: Terraform_Plan
+                  spec:
+                    configuration:
+                      type: Inline
+                      spec:
+                        configFiles:
+                          store:
+                            type: Github
+                            spec:
+                              connectorRef: my_github_connector
+                              repoName: my-terraform-repo
+                              branch: main
+                              folderPath: /
+                        backendConfig:
+                          type: Inline
+                          spec:
+                            content: |
+                              bucket = "my-tf-state-bucket"
+                              key    = "terraform.tfstate"
+                              region = "us-east-1"
+                        varFiles:
+                          - varFile:
+                              type: Inline
+                              identifier: tfvars
+                              spec:
+                                content: |
+                                  instance_type = "t3.micro"
+
+              - step:
+                  type: TerraformApply
+                  name: Terraform Apply
+                  identifier: Terraform_Apply
+                  spec:
+                    configuration:
+                      type: InheritFromPlan
