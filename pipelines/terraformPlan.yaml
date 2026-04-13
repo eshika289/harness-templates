@@ -61,6 +61,62 @@ pipeline:
                             folderPath: <+pipeline.variables.terraformDir>
                   delegateSelectors:
                     - docker-delegate
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: StageRollback
+    - stage:
+        name: Approval
+        identifier: Approval
+        type: Approval
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: Approval
+                  identifier: approval
+                  type: HarnessApproval
+                  timeout: 1h
+                  spec:
+                    approvalMessage: Do you wnat to approve the changes?
+                    includePipelineExecutionHistory: true
+                    approvers:
+                      minimumCount: 1
+                      disallowPipelineExecutor: false
+                      userGroups:
+                        - _project_all_users
+                    approverInputs:
+                      - name: isApproved
+                        defaultValue: value
+                    isAutoRejectEnabled: false
+        failureStrategies: []
+    - stage:
+        name: Terraform Apply
+        identifier: Terraform_Apply
+        type: Custom
+        spec:
+          execution:
+            steps:
+              - step:
+                  type: ShellScript
+                  name: Set Terraform Version
+                  identifier: Set_Terraform_Version
+                  spec:
+                    shell: Bash
+                    onDelegate: true
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          export PATH="/usr/local/tfenv/bin:$PATH"
+                          tfenv use <+pipeline.variables.terraformVersion>
+                          terraform --version
+                    environmentVariables: []
+                    outputVariables: []
+                  delegateSelectors:
+                    - docker-delegate
               - step:
                   type: TerraformApply
                   name: Terraform Apply
