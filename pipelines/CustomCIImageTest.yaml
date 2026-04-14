@@ -14,7 +14,7 @@ pipeline:
           infrastructure:
             type: KubernetesDirect
             spec:
-              connectorRef: helm-delegate
+              connectorRef: org.helm-delegate
               namespace: harness-builds
               os: Linux
           execution:
