@@ -1,0 +1,30 @@
+pipeline:
+  name: CustomCIImageTest
+  identifier: CustomCIImageTest
+  projectIdentifier: default_project
+  orgIdentifier: default
+  tags: {}
+  stages:
+    - stage:
+        name: ci-test
+        identifier: ci_test
+        type: CI
+        spec:
+          cloneCodebase: false
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: helm-delegate
+              namespace: harness-builds
+              os: Linux
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: check aws version
+                  identifier: check_aws_version
+                  spec:
+                    image: harness-ci-custom:latest
+                    imagePullPolicy: Never
+                    shell: Sh
+                    command: aws --version
