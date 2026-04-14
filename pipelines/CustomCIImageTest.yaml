@@ -14,7 +14,7 @@ pipeline:
           infrastructure:
             type: KubernetesDirect
             spec:
-              connectorRef: account._helm_delegate
+              connectorRef: account.minikubelocal
               namespace: harness-builds
               os: Linux
           execution:
