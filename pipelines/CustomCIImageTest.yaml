@@ -24,6 +24,7 @@ pipeline:
                   name: check aws version
                   identifier: check_aws_version
                   spec:
+                    connectorRef: account.harnessImage
                     image: harness-ci-custom:latest
                     imagePullPolicy: Never
                     shell: Sh
